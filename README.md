@@ -1,4 +1,4 @@
-# SuperMarket (language: pt-br)
+# SuperMarket
 
 A virtual supermarket shopping list made on Flutter and FireStore Database. Basic and simple app aimed initially at studies and personal learning. Free for use by anyone who does not use for commercial purposes.
 
