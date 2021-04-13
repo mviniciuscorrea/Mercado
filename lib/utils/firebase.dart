@@ -1,32 +1,33 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:mercado/model/produtos.dart';
 import 'package:mercado/utils/functions.dart';
 
-Firestore _db = Firestore.instance;
+FirebaseFirestore _db = FirebaseFirestore.instance;
 
 Future<List<ProdutoProperties>> carregarProdutos() async {
   QuerySnapshot querySnapshot =
-      await _db.collection("produtos").orderBy("produto").getDocuments();
+      await _db.collection("produtos").orderBy("produto").get();
 
   List<ProdutoProperties> _listaProdutos = [];
 
-  for (var item in querySnapshot.documents) {
+  for (var item in querySnapshot.docs) {
     ProdutoProperties _p = new ProdutoProperties();
 
-    _p.codigo = item.documentID;
-    _p.produto = item.data["produto"].toString().convertInitCap();
-    _p.marca = item.data["marca"].toString().convertInitCap();
-    _p.quantidade =
-        ((item.data["quantidade"] == null) || (item.data["quantidade"] == ''))
-            ? 0
-            : item.data["quantidade"];
+    _p.codigo = item.id;
+    _p.produto = item.data()["produto"].toString().convertInitCap();
+    _p.marca = item.data()["marca"].toString().convertInitCap();
+    _p.quantidade = ((item.data()["quantidade"] == null) ||
+            (item.data()["quantidade"] == ''))
+        ? 0
+        : item.data()["quantidade"];
     _p.carrinho =
-        ((item.data["carrinho"] == null) || (item.data["carrinho"] == ''))
+        ((item.data()["carrinho"] == null) || (item.data()["carrinho"] == ''))
             ? false
-            : item.data["carrinho"];
-    _p.lista = ((item.data["lista"] == null) || (item.data["lista"] == ''))
+            : item.data()["carrinho"];
+    _p.lista = ((item.data()["lista"] == null) || (item.data()["lista"] == ''))
         ? false
-        : item.data["lista"];
+        : item.data()["lista"];
     _listaProdutos.add(_p);
   }
 
@@ -45,7 +46,7 @@ Future<bool> novo(String collection, Map<String, dynamic> document) async {
 Future<bool> atualizar(
     String collection, String codigo, Map<String, dynamic> document) async {
   try {
-    _db.collection(collection)..document(codigo).setData(document);
+    _db.collection(collection)..doc(codigo).set(document);
     return true;
   } catch (e) {
     return false;
@@ -54,7 +55,7 @@ Future<bool> atualizar(
 
 Future<bool> remover(String collection, String document) async {
   try {
-    _db.collection(collection).document(document).delete();
+    _db.collection(collection).doc(document).delete();
     return true;
   } catch (e) {
     return false;
@@ -68,25 +69,25 @@ Future<List<ProdutoProperties>> carregarProdutosListaCompras() async {
       .collection("produtos")
       .where("lista", isEqualTo: true)
       .orderBy("produto")
-      .getDocuments();
+      .get();
 
-  for (var item in querySnapshot.documents) {
+  for (var item in querySnapshot.docs) {
     ProdutoProperties _p = new ProdutoProperties();
 
-    _p.codigo = item.documentID;
-    _p.produto = item.data["produto"].toString().convertInitCap();
-    _p.marca = item.data["marca"].toString().convertInitCap();
-    _p.quantidade =
-        ((item.data["quantidade"] == null) || (item.data["quantidade"] == ''))
-            ? 0
-            : item.data["quantidade"];
+    _p.codigo = item.id;
+    _p.produto = item.data()["produto"].toString().convertInitCap();
+    _p.marca = item.data()["marca"].toString().convertInitCap();
+    _p.quantidade = ((item.data()["quantidade"] == null) ||
+            (item.data()["quantidade"] == ''))
+        ? 0
+        : item.data()["quantidade"];
     _p.carrinho =
-        ((item.data["carrinho"] == null) || (item.data["carrinho"] == ''))
+        ((item.data()["carrinho"] == null) || (item.data()["carrinho"] == ''))
             ? false
-            : item.data["carrinho"];
-    _p.lista = ((item.data["lista"] == null) || (item.data["lista"] == ''))
+            : item.data()["carrinho"];
+    _p.lista = ((item.data()["lista"] == null) || (item.data()["lista"] == ''))
         ? false
-        : item.data["lista"];
+        : item.data()["lista"];
     _listaProdutos.add(_p);
   }
 
