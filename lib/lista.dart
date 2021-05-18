@@ -125,6 +125,12 @@ class _ListItemState extends State<ListItem> {
   }
 
   @override
+  void initState() {
+    _icon(_carrinho);
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Padding(
       padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
