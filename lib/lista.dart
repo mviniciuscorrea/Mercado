@@ -9,166 +9,105 @@ class Lista extends StatefulWidget {
 }
 
 class _ListaState extends State<Lista> {
-  Widget _conteudoPagina;
-  List _listaProdutos = [];
+  List<Widget> _listaProdutos = [];
+  bool _loading = false;
+
+  static String _collection = "produtos";
 
   @override
   void initState() {
     super.initState();
-    if (!mounted) return;
-
-    _conteudoPagina = loading();
     _carregarLista();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.only(top: 5),
-      child: _conteudoPagina,
-    );
+    return Scaffold(
+        body: _loading
+            ? Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [loading()])
+              ])
+            : _listaProdutos.length == 0
+                ? Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                    Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            '"Sem produtos na lista"',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey[400],
+                            ),
+                          )
+                        ]),
+                  ])
+                : SingleChildScrollView(
+                    child: Column(children: _listaProdutos)));
   }
 
-  _carregarLista() {
-    _listaProdutos = [];
+  void _carregarLista() {
+    _loading = true;
+    _listaProdutos.clear();
 
     carregarProdutosListaCompras().then((resp) {
-      _listaProdutos = resp;
+      setState(() {
+        _loading = false;
+        bool _addCarrinho = false;
 
-      if (_listaProdutos.length == 0) {
-        setState(() {
-          _conteudoPagina = Scaffold(
-              body: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-                Text(
-                  '"Sem produtos na lista"',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey[400],
+        for (var i = 0; i < resp.length; i++) {
+          if (i == 0) {
+            _listaProdutos.add(SizedBox(
+              height: 5,
+            ));
+          }
+
+          _addCarrinho = resp[i].carrinho;
+
+          _listaProdutos.add(Padding(
+              padding: EdgeInsets.only(left: 10, right: 10),
+              child: Card(
+                child: ListTile(
+                  leading: Padding(
+                    padding: EdgeInsets.only(top: 5),
+                    child: Text(
+                      resp[i].quantidade.toString() + ' un.',
+                      style: TextStyle(
+                          color: Colors.amber[800],
+                          fontWeight: FontWeight.bold),
+                    ),
                   ),
-                )
-              ])
-            ],
-          ));
-        });
-      } else {
-        setState(() {
-          _conteudoPagina = Scaffold(
-            body: Column(
-              children: [
-                Expanded(
-                    child: ListView.builder(
-                  itemCount: _listaProdutos.length,
-                  itemBuilder: _criarListaProdutos,
-                ))
-              ],
-            ),
-          );
-        });
-      }
+                  title: Text(resp[i].produto,
+                      style: TextStyle(fontWeight: FontWeight.bold)),
+                  subtitle: resp[i].marca.isEmpty
+                      ? null
+                      : Text("Marca: " + resp[i].marca),
+                  trailing: Icon(
+                    Icons.check_circle,
+                    color: _addCarrinho ? Colors.green : Colors.transparent,
+                  ),
+                  onTap: () {
+                    ProdutoProperties _p = new ProdutoProperties();
+                    _p.produto = resp[i].produto;
+                    _p.marca = resp[i].marca;
+                    _p.quantidade = resp[i].quantidade;
+                    _p.carrinho = !resp[i].carrinho;
+                    _p.lista = resp[i].lista;
+
+                    _p.toJSON().then((json) => {
+                          atualizar(_collection, resp[i].codigo, json)
+                              .then((resp) {
+                            if (resp) {
+                              _carregarLista();
+                            }
+                          })
+                        });
+                  },
+                ),
+              )));
+        }
+      });
     });
-  }
-
-  Widget _criarListaProdutos(context, index) {
-    return ListItem(
-      codigo: _listaProdutos[index].codigo,
-      produto: _listaProdutos[index].produto,
-      marca: _listaProdutos[index].marca,
-      quantidade: _listaProdutos[index].quantidade,
-      carrinho: _listaProdutos[index].carrinho,
-      lista: _listaProdutos[index].lista,
-    );
-  }
-}
-
-class ListItem extends StatefulWidget {
-  final String codigo;
-  final String produto;
-  final String marca;
-  final int quantidade;
-  final bool carrinho;
-  final bool lista;
-
-  const ListItem(
-      {this.codigo,
-      this.produto,
-      this.marca,
-      this.quantidade,
-      this.carrinho,
-      this.lista});
-
-  @override
-  _ListItemState createState() =>
-      _ListItemState(codigo, produto, marca, quantidade, carrinho, lista);
-}
-
-class _ListItemState extends State<ListItem> {
-  final String _collection = "produtos";
-
-  String _codigo;
-  String _produto;
-  String _marca;
-  int _quantidade;
-  bool _carrinho;
-  bool _lista;
-
-  _ListItemState(this._codigo, this._produto, this._marca, this._quantidade,
-      this._carrinho, this._lista);
-
-  Widget _icon(carrinho) {
-    return Icon(
-      Icons.check_circle,
-      color: carrinho ? Colors.amber[800] : Colors.transparent,
-    );
-  }
-
-  @override
-  void initState() {
-    _icon(_carrinho);
-    super.initState();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
-      child: Card(
-          child: ListTile(
-              onTap: () {
-                setState(() {
-                  ProdutoProperties _p = new ProdutoProperties();
-                  _p.produto = _produto;
-                  _p.marca = _marca;
-                  _p.quantidade = _quantidade;
-                  _p.carrinho = _carrinho ? false : true;
-                  _p.lista = _lista;
-
-                  _p.toJSON().then((json) => {
-                        atualizar(_collection, _codigo, json).then((resp) => {
-                              if (resp) {_carrinho = _carrinho ? false : true}
-                            })
-                      });
-                });
-              },
-              leading: Padding(
-                  padding: EdgeInsets.only(top: 5),
-                  child: Text(
-                    _quantidade.toString() + ' un.',
-                    style: TextStyle(
-                        color: Colors.amber[800], fontWeight: FontWeight.bold),
-                  )),
-              title: Text(
-                _produto,
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              subtitle: _marca == "" ? null : Text("Marca: " + _marca),
-              trailing: Row(mainAxisSize: MainAxisSize.min, children: [
-                GestureDetector(
-                  child: _icon(_carrinho),
-                )
-              ]))),
-    );
   }
 }

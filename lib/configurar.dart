@@ -47,7 +47,7 @@ class _ConfigurarState extends State<Configurar> {
             ],
           ),
           floatingActionButton: FloatingActionButton(
-            backgroundColor: Color(0xff056162),
+            backgroundColor: Colors.amber[800],
             onPressed: () {
               _mensagemLimparListaCompras();
             },
@@ -56,6 +56,15 @@ class _ConfigurarState extends State<Configurar> {
               color: Colors.white,
             ),
           ),
+          bottomNavigationBar: BottomAppBar(
+            shape: new CircularNotchedRectangle(),
+            color: Colors.grey[900],
+            child: Container(
+              height: 35.0,
+            ),
+          ),
+          floatingActionButtonLocation:
+              FloatingActionButtonLocation.miniCenterDocked,
         );
       });
     });
@@ -69,12 +78,12 @@ class _ConfigurarState extends State<Configurar> {
             title: Text('Limpar Lista?'),
             content: Text('Deseja limpar toda a lista de compras atual?'),
             actions: [
-              FlatButton(
+              TextButton(
                   child: Text("Não"),
                   onPressed: () {
                     Navigator.pop(context);
                   }),
-              FlatButton(
+              TextButton(
                   child: Text("Sim"),
                   onPressed: () {
                     Navigator.pop(context);

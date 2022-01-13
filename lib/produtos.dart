@@ -12,7 +12,7 @@ class _ProdutosState extends State<Produtos> with TickerProviderStateMixin {
   TextEditingController _controllerProduto = TextEditingController();
   TextEditingController _controllerMarca = TextEditingController();
 
-  String _collection = "produtos";
+  final String _collection = "produtos";
   String _codigoProduto = "";
 
   Widget _conteudoPagina;
@@ -43,7 +43,7 @@ class _ProdutosState extends State<Produtos> with TickerProviderStateMixin {
           title: Text(titulo),
           content: Text(mensagem),
           actions: [
-            FlatButton(
+            TextButton(
                 child: Text("Ok"),
                 onPressed: () {
                   Navigator.pop(context);
@@ -84,14 +84,14 @@ class _ProdutosState extends State<Produtos> with TickerProviderStateMixin {
               ],
             ),
             actions: [
-              FlatButton(
+              TextButton(
                   child: Text("Cancelar"),
                   onPressed: () {
                     Navigator.pop(context);
                     _controllerProduto.text = '';
                     _controllerMarca.text = '';
                   }),
-              FlatButton(
+              TextButton(
                   child: Text("Salvar"),
                   onPressed: () {
                     _incluirAtualizar(produto);
@@ -101,57 +101,73 @@ class _ProdutosState extends State<Produtos> with TickerProviderStateMixin {
         });
   }
 
+  _showDialogExcluir(index) {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text("Confirma?"),
+            content: Text("Deseja excluir produto?"),
+            actions: [
+              TextButton(
+                child: Text("Não"),
+                onPressed: () {
+                  _criarListaProdutos(context, index);
+                  Navigator.pop(context);
+                },
+              ),
+              TextButton(
+                child: Text("Sim"),
+                onPressed: () {
+                  remover(_collection, _listaProdutos[index].codigo)
+                      .then((resp) {
+                    if (resp) {
+                      _listaProdutos.removeAt(index);
+                    }
+                  });
+                },
+              )
+            ],
+          );
+        });
+  }
+
   Widget _criarListaProdutos(context, index) {
+    var _index = index;
+
     return Dismissible(
       key: Key(_listaProdutos[index].codigo),
       direction: DismissDirection.startToEnd,
       onDismissed: (direction) {
-        remover(_collection, _listaProdutos[index].codigo).then((resp) {
-          if (resp) {
-            _listaProdutos.removeAt(index);
-          } else {
-            // msg de erro na exclusão
-          }
-        });
+        _showDialogExcluir(_index);
       },
       child: Padding(
-          padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
+          padding: EdgeInsets.only(right: 10, left: 10),
           child: Card(
               child: ListTile(
             title: Text(
               _listaProdutos[index].produto,
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
-            subtitle: _listaProdutos[index].marca == ""
+            subtitle: _listaProdutos[index].marca.toString().isEmpty
                 ? null
                 : Text("Marca: " + _listaProdutos[index].marca),
             trailing: GestureDetector(
-              child: Icon(
-                Icons.edit,
-                color: Colors.grey[400],
-              ),
-              onTap: () {
-                _showDialogInput(context, _listaProdutos[index]);
-              },
-            ),
+                child: Icon(Icons.edit, color: Colors.amber[800]),
+                onTap: () {
+                  _showDialogInput(context, _listaProdutos[index]);
+                }),
           ))),
       background: Container(
-        color: Colors.red,
-        padding: EdgeInsets.all(16),
-        child: Row(
-          children: [
+          color: Colors.red,
+          padding: EdgeInsets.all(16),
+          child: Row(children: [
             Icon(Icons.delete, color: Colors.white),
-            Padding(padding: EdgeInsets.fromLTRB(7, 0, 0, 0)),
-            Text(
-              "Deletar",
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            )
-          ],
-        ),
-      ),
+            Padding(padding: EdgeInsets.only(left: 7)),
+            Text("Excluir",
+                style:
+                    TextStyle(fontWeight: FontWeight.bold, color: Colors.white))
+          ])),
     );
   }
 
@@ -173,12 +189,21 @@ class _ProdutosState extends State<Produtos> with TickerProviderStateMixin {
             ],
           ),
           floatingActionButton: FloatingActionButton(
-            backgroundColor: Color(0xff056162),
+            backgroundColor: Colors.amber[800],
             onPressed: () {
               _showDialogInput(context, null);
             },
             child: const Icon(Icons.add, color: Colors.white),
           ),
+          bottomNavigationBar: BottomAppBar(
+            shape: new CircularNotchedRectangle(),
+            color: Colors.grey[900],
+            child: Container(
+              height: 35.0,
+            ),
+          ),
+          floatingActionButtonLocation:
+              FloatingActionButtonLocation.miniCenterDocked,
         );
       });
     });

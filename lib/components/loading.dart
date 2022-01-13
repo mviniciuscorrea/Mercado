@@ -6,7 +6,7 @@ loading() {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         CircularProgressIndicator(
-          backgroundColor: Color(0xff056162),
+          color: Colors.amber[800],
         )
       ]);
 }

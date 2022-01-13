@@ -23,7 +23,7 @@ class _SplashState extends State<Splash> {
                   fontSize: 15.0,
                   color: Colors.amber[800]),
             ),
-            loaderColor: Color(0xff056162),
+            loaderColor: Colors.amber[800],
             image: new Image.asset("assets/icon/icon.png"),
             photoSize: 80.0),
       ],

@@ -12,6 +12,9 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
   String _tituloPagina = "Lista de Compras";
   TabController _tabController;
 
+  final _corSelecionado = Colors.amber[800];
+  final _corSemSelecionado = Colors.grey;
+
   @override
   void initState() {
     super.initState();
@@ -35,30 +38,40 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
   }
 
   @override
-  void dispose() {
-    _tabController.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(
           _tituloPagina,
-          style: TextStyle(fontSize: 16),
+          style: TextStyle(fontSize: 16, color: Colors.amber[800]),
         ),
         bottom: TabBar(
             controller: _tabController,
-            indicatorColor: Colors.white,
+            indicatorColor: Colors.amber[800],
             tabs: [
               Tab(
-                icon: Icon(Icons.shopping_cart_outlined),
+                icon: Icon(
+                  Icons.shopping_cart_outlined,
+                  color: _tabController.index == 0
+                      ? _corSelecionado
+                      : _corSemSelecionado,
+                ),
               ),
               Tab(
-                icon: Icon(Icons.fastfood_outlined),
+                icon: Icon(
+                  Icons.fastfood_outlined,
+                  color: _tabController.index == 1
+                      ? _corSelecionado
+                      : _corSemSelecionado,
+                ),
               ),
               Tab(
-                icon: Icon(Icons.post_add_rounded),
+                icon: Icon(
+                  Icons.post_add_rounded,
+                  color: _tabController.index == 2
+                      ? _corSelecionado
+                      : _corSemSelecionado,
+                ),
               )
             ]),
       ),
